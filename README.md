@@ -3,7 +3,6 @@ CSCI 5253 Project
 
 ## Development Note
 - Don't need to push generated files, only push files containing changes or new files you created to Git, 
-- Create a branch when working on a task. When finish, create pull request for reviewing and merging. This helps our master branch be stable all the time and avoid conflicts between developers' codes.
 - Add comments and explainations in the codes for everybody to understand.
 
 ## Install dependencies
