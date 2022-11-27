@@ -22,7 +22,7 @@ CREATE TABLE post (
   title TEXT NOT NULL,
   description TEXT NOT NULL,
   image TEXT NOT NULL,
-  price FLOAT NOT NULL,
+  price INTEGER NOT NULL,
   status TEXT NOT NULL,
   FOREIGN KEY (author_id) REFERENCES user (id)
 );
@@ -32,7 +32,7 @@ CREATE TABLE bid (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   author_id INTEGER NOT NULL,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  amount FLOAT NOT NULL,
+  amount INTEGER NOT NULL,
   status TEXT NOT NULL,
   FOREIGN KEY (author_id) REFERENCES user (id)
 )

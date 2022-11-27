@@ -18,7 +18,7 @@ def index():
     """Show all the posts, most recent first."""
     db = get_db()
     posts = db.execute(
-        "SELECT p.id, title, description, created, author_id, username"
+        "SELECT p.id, title, description, image, price, status, created, author_id, username, u.firstname, u.lastname"
         " FROM post p JOIN user u ON p.author_id = u.id"
         " ORDER BY created DESC"
     ).fetchall()
@@ -40,7 +40,7 @@ def get_post(id, check_author=True):
     post = (
         get_db()
         .execute(
-            "SELECT p.id, title, description, created, author_id, username"
+            "SELECT p.id, title, description, created, author_id, username, u.firstname, u.lastname"
             " FROM post p JOIN user u ON p.author_id = u.id"
             " WHERE p.id = ?",
             (id,),
@@ -53,7 +53,6 @@ def get_post(id, check_author=True):
 
     if check_author and post["author_id"] != g.user["id"]:
         abort(403)
-
     return post
 
 
@@ -62,16 +61,21 @@ def get_post(id, check_author=True):
 def create():
     """Create a new post for the current user."""
     if request.method == "POST":
+        # Get all needed info from the create item form
         title = request.form["title"]
         description = request.form["description"]
         image = request.form["image"] # use URL, TODO: use binary
-        price = request.form["price"]
-        status = 'available'
+        price = request.form["price"] # price is integer
+        status = 'available' # status enum available, bidding, sold
         error = None
 
+        # Validate input before putting to db
         if not title:
             error = "Title is required."
-
+        elif not price.isnumeric():
+            error = "Enter price as integer"
+        
+        # alert error if bad input or save to db if valid input
         if error is not None:
             flash(error)
         else:
@@ -93,6 +97,7 @@ def update(id):
     post = get_post(id)
 
     if request.method == "POST":
+        # Get all needed info from the update item form
         title = request.form["title"]
         description = request.form["description"]
         error = None
