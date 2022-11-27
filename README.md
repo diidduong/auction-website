@@ -2,6 +2,7 @@
 CSCI 5253 Project
 
 ## Development Note
+- We will keep track of our work [here](https://www.notion.so/invite/980fba7436651721cf51f072c6f90dd0cfde70d3)
 - Don't need to push generated files, only push files containing changes or new files you created to Git, 
 - Add comments and explainations in the codes for everybody to understand.
 
