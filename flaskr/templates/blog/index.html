@@ -19,11 +19,15 @@
           <a class="action" href="{{ url_for('blog.update', id=post['id']) }}">Edit</a>
         {% endif %}
       </header>
-      <div class="price">Price: ${{ "{:,}".format(post['price']) }}</div>
-      <p class="description">{{ post['description'] }}</p>
+      <div class="status">Status: {{ post['status'] }}</div>
+      <div class="price">Original Price: ${{ "{:,}".format(post['price']) }}</div>
+      <div class="top_ask_price">Ask Price: {{ "${:,}".format(post['best_ask_price']) if post['best_ask_price'] else 'None' }}</div>
       <footer>
         {% if g.user['id'] != post['author_id'] %}
-          <a class="action" href="">Bid</a>
+          <form action="{{ url_for('blog.bid', post_id=post['id'], amount=6000) }}" method="post">
+            <input type="number" name="amount" id="amount" placeholder="Amount" required>
+            <input type="submit" value="Bid">
+          </form>
         {% endif %}
       </footer>
     </article>

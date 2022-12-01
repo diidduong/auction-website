@@ -18,9 +18,9 @@ def index():
     """Show all the posts, most recent first."""
     db = get_db()
     posts = db.execute(
-        "SELECT p.id, title, description, image, price, status, created, author_id, username, u.firstname, u.lastname"
+        "SELECT p.id, title, description, image, price, best_ask_price, p.status, p.created, p.author_id, username, u.firstname, u.lastname"
         " FROM post p JOIN user u ON p.author_id = u.id"
-        " ORDER BY created DESC"
+        " ORDER BY p.created DESC"
     ).fetchall()
     return render_template("blog/index.html", posts=posts)
 
@@ -133,9 +133,27 @@ def delete(id):
     return redirect(url_for("blog.index"))
 
 
-@bp.route("/<int:id>/bid", methods=("POST",))
+@bp.route("/<int:post_id>/bid", methods=("POST",))
 @login_required
-def bid(id):
-    # TODO: Add bidding feature
-    return
+def bid(post_id):
+    author_id = g.user["id"]
+    amount = request.form["amount"]
+    db = get_db()
+    
+    # Find if there is an existing bid to that post by current user
+    bid = db.execute("SELECT id, post_id FROM bid WHERE post_id = ? AND author_id = ?", (post_id, author_id,)).fetchone()
+    
+    # Create a new bid or update current bid
+    if bid is None:
+        db.execute("INSERT INTO bid(author_id, post_id, ask_price, status) VALUES (?, ?, ?, ?)", (author_id, post_id, amount, 'sucessful'))
+        db.commit()
+        bid = db.execute("SELECT id FROM bid WHERE id = ? AND author_id = ?", (post_id, author_id)).fetchone()
+    else:
+        db.execute("UPDATE bid SET ask_price = ? WHERE id = ?", (amount, bid["id"]))
+        db.commit()
+
+    db.execute("UPDATE post SET best_bid_id = ?, best_ask_price = ? WHERE id = ?", (bid["id"], amount, post_id))
+    db.commit()
+
+    return redirect(url_for("blog.index"))
 
