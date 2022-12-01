@@ -55,6 +55,18 @@ def get_post(id, check_author=True):
         abort(403)
     return post
 
+def get_allBidders(postID):
+    """Gets post that is combination of post and user tables to get all users on currentBid"""
+    post = (
+        get_db()
+        .execute(
+            "SELECT b.author_id FROM post p JOIN bid b ON p.id = b.post_id WHERE p.id == ? ",(postID)
+        ).fetchall()
+    )
+    if post is None:
+        abort(404, f"Post id {id} doesn't exist.")
+
+    return post
 
 @bp.route("/create", methods=("GET", "POST"))
 @login_required
@@ -66,6 +78,7 @@ def create():
         description = request.form["description"]
         image = request.form["image"] # use URL, TODO: use binary
         price = request.form["price"] # price is integer
+        duration = request.form["duration"] #duration of aution item
         status = 'available' # status enum available, bidding, sold
         error = None
 
@@ -81,8 +94,8 @@ def create():
         else:
             db = get_db()
             db.execute(
-                "INSERT INTO post (title, description, image, price, status, author_id) VALUES (?, ?, ?, ?, ?, ?)",
-                (title, description, image, price, status, g.user["id"]),
+                "INSERT INTO post (title, description, image, price, status, duration, author_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (title, description, image, price, status, duration,g.user["id"]),
             )
             db.commit()
             return redirect(url_for("blog.index"))
@@ -156,4 +169,49 @@ def bid(post_id):
     db.commit()
 
     return redirect(url_for("blog.index"))
+
+
+@bp.route('/notifyAllBidders', methods=['POST','GET'])
+@login_required
+def notifyAllBidders():
+    if request.method == "POST":
+        """Get all current for all users who placed bid"""
+        #TODO: call function to get all notification from db
+        userIDList = get_allBidders()
+        print(userIDList)
+        return render_template("blog/testNotification.html", posts=posts)
+         
+    
+    return render_template("blog/testNotification.html")
+
+
+#@bp.route('/<int:id>/notify', methods=['GET'])
+##@login_required
+#def notify(id):
+#    """Get all current notification about bids"""
+#    #TODO: call function to get all notification from db
+    
+#from flask_modals import render_template_modal
+
+#@bp.route('/<int:id>notify', methods=['GET'])
+#@login_required
+#def notify():
+
+#    return
+    # ajax = '_ajax' in request.form
+    #form = LoginForm()
+    #if form.validate_on_submit():
+    #    if form.username.data != 'test' or form.password.data != 'pass':
+    #        flash('Invalid username or password', 'danger')
+    #        return render_template_modal('index.html', form=form)
+
+        #if ajax:
+        #    return ''
+        #login_user(user, remember=form.remember_me.data)
+
+        #flash('You have logged in!', 'success')
+        #return render_template_modal('index.html', form=form)
+
+    #return render_template_modal('index.html', form=form)
+
 

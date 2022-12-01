@@ -15,5 +15,7 @@
     <label for="price">Price</label>
     <input name="price" id="price" value="{{ request.form['price'] }}" required>
     <input type="submit" value="Save">
+    <input name="duration" id="duration" value="{{ request.form['duration'] }}" required>
+    <input type="submit" value="Save">
   </form>
 {% endblock %}

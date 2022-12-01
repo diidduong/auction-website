@@ -1,6 +1,9 @@
 import os
 
 from flask import Flask
+from flask_modals import Modal
+
+modal = Modal()
 
 
 def create_app(test_config=None):
@@ -34,7 +37,7 @@ def create_app(test_config=None):
     from flaskr import db
 
     db.init_app(app)
-
+    modal.init_app(app)
     # apply the blueprints to the app
     from flaskr import auth, blog
 
