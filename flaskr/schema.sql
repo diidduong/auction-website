@@ -23,16 +23,21 @@ CREATE TABLE post (
   description TEXT NOT NULL,
   image TEXT NOT NULL,
   price INTEGER NOT NULL,
+  best_ask_price INTEGER,
+  best_bid_id INTEGER,
   status TEXT NOT NULL,
   FOREIGN KEY (author_id) REFERENCES user (id)
+  FOREIGN KEY (best_bid_id) REFERENCES bid (id)
 );
 
 -- status 'successful', 'outbidded', 'failed'
 CREATE TABLE bid (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   author_id INTEGER NOT NULL,
+  post_id INTEGER NOT NULL,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  amount INTEGER NOT NULL,
+  ask_price INTEGER NOT NULL,
   status TEXT NOT NULL,
-  FOREIGN KEY (author_id) REFERENCES user (id)
+  FOREIGN KEY (author_id) REFERENCES user (id),
+  FOREIGN KEY (post_id) REFERENCES post(id)
 )
