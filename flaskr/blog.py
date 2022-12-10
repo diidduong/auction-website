@@ -7,7 +7,7 @@ from flask import request
 from flask import url_for
 from flask import current_app
 from werkzeug.exceptions import abort
-
+import time
 from flaskr.auth import login_required
 from flaskr.db import get_db
 
@@ -26,7 +26,7 @@ def index():
 
     return render_template("blog/index.html", posts=posts)
 
-
+"""
 @bp.route("/test-apscheduler", methods=("GET",))
 def test_apscheduler():
     print('testing scheduler...')
@@ -39,6 +39,22 @@ def test_apscheduler():
         replace_existing=True
     )
     return render_template("blog/index.html")
+"""
+#@bp.route("/timer-for-bid", methods=("GET",))
+#def bidTime_apscheduler(duration):
+#    print('testing timing with scheduler...')
+#    current_app.apscheduler.add_job(
+#        func=bidTime_scheduler,
+#        trigger="date",
+#        seconds=duration,
+#        id="bidTime-scheduler",
+#       name="bidTime-scheduler",
+#        replace_existing=True
+#    )
+#    return render_template("blog/index.html")    
+
+
+
 
 def get_post(id, check_author=True):
     """Get a post and its author by id.
@@ -82,6 +98,7 @@ def create():
         description = request.form["description"]
         image = request.form["image"] # use URL, TODO: use binary
         price = request.form["price"] # price is integer
+        duration = request.form["duration"] #time in seconds
         status = 'available' # status enum available, bidding, sold
         error = None
 
@@ -97,19 +114,32 @@ def create():
         else:
             db = get_db()
             db.execute(
-                "INSERT INTO post (title, description, image, price, status, author_id) VALUES (?, ?, ?, ?, ?, ?)",
-                (title, description, image, price, status, g.user["id"]),
+                "INSERT INTO post (title, description, image, price, duration, status, author_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (title, description, image, price, duration,status, g.user["id"]),
             )
             db.commit()
+
+            #grabbing post that was just made
+            post = db.execute(
+                "SELECT p.id,duration "
+                " FROM post p "
+                " ORDER BY p.id DESC "
+                " LIMIT 1 ",
+            ).fetchone()
+            jobId = "bidTime_scheduler" + str(post['id'])
+            app_ctx = current_app.app_context()
+            app_ctx.push()
+            #print("currentapp -",current_app)
+            current_app.apscheduler.add_job(func= bidTime_scheduler,trigger="interval",seconds =5,id=jobId,name =jobId,replace_existing = True,args=[post['id'],jobId,current_app._get_current_object()])
+            time.sleep(6)
+            app_ctx.pop()
+            #current_app.apscheduler.add_job(func=bidTime_scheduler_Test,trigger="interval",seconds=5,id="test scheduler",name="test scheduler",replace_existing=True,args=[post['id'],jobId])
+            #current_app.apscheduler.add_job(func=test_scheduler,trigger="interval",seconds=5,id="test scheduler",name="test scheduler",replace_existing=True)
             return redirect(url_for("blog.index"))
-        current_app.apscheduler.add_job(
-        func=test_scheduler,
-        trigger="interval",
-        seconds=5,
-        id="test scheduler",
-        name="test scheduler",
-        replace_existing=True
-    )
+        #TODO : add bitTime scheduler here
+        #current_app.apscheduler.add_job(func= bidTime_scheduler)
+        #current_app.apscheduler.add_job(func=test_scheduler,trigger="interval",seconds=5,id="test scheduler",name="test scheduler",replace_existing=True)
+
     return render_template("blog/create.html")
 
 
@@ -223,3 +253,33 @@ def bid(post_id):
 def test_scheduler():
     msg = 'Scheduler run!'
     print(msg)
+
+#@bp.route("/bidTime-apscheduler", methods=("GET",))
+def bidTime_scheduler(postID,jobId,cApp):
+    with cApp.app_context():
+        msg = 'bidScheduler run!'
+        db = get_db()
+        print(msg)
+        #getting duration 
+        post = db.execute(
+            "SELECT p.id,duration "
+            " FROM post p "
+            " WHERE p.id == ?", (postID,),
+        ).fetchone()
+
+        duration = post['duration']
+        msg1 ="past duration: "+ str(duration)
+        print(msg1)
+        if(duration <= 0):
+            #TODO disable bidding on post
+            print("need to disable bids and notify winning bid")
+            print("stopping job...")
+            current_app.apscheduler.remove_job(jobId)
+        else:
+            newDuration = post['duration']-5
+            print(f"Changing duration from {post['duration']} to {newDuration}")
+            update = (db.execute( "UPDATE post SET duration = ? WHERE id = ?", (newDuration,post['id']) )  )
+            db.commit()
+            print("updated db with new duration")
+
+    #return render_template("blog/index.html")

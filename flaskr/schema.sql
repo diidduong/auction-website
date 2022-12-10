@@ -25,6 +25,7 @@ CREATE TABLE post (
   description TEXT NOT NULL,
   image TEXT NOT NULL,
   price INTEGER NOT NULL,
+  duration INTEGER NOT NULL,
   best_ask_price INTEGER,
   best_bid_id INTEGER,
   status TEXT NOT NULL,

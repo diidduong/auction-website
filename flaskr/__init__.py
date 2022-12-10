@@ -4,6 +4,7 @@ from flask import Flask
 from flask_apscheduler import APScheduler
 import logging
 
+
 # set configuration values
 class Config:
     SCHEDULER_API_ENABLED = True
@@ -38,9 +39,9 @@ def create_app(test_config=None):
     def hello():
         return "Hello, World!"
 
+    #app.app_context().push()
     # register the database commands
     from flaskr import db
-
     db.init_app(app)
 
 
@@ -49,6 +50,9 @@ def create_app(test_config=None):
     scheduler.api_enabled = True
     scheduler.init_app(app)
     scheduler.start()
+    #appCTX = app.app_context()
+    #appCTX.push()
+    
     # apply the blueprints to the app
     from flaskr import auth, blog
 
@@ -64,6 +68,7 @@ def create_app(test_config=None):
     return app
 
 app = create_app()
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
