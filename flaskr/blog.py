@@ -5,6 +5,7 @@ from flask import redirect
 from flask import render_template
 from flask import request
 from flask import url_for
+from flask import current_app
 from werkzeug.exceptions import abort
 
 from flaskr.auth import login_required
@@ -22,8 +23,22 @@ def index():
         " FROM post p JOIN user u ON p.author_id = u.id"
         " ORDER BY p.created DESC"
     ).fetchall()
+
     return render_template("blog/index.html", posts=posts)
 
+
+@bp.route("/test-apscheduler", methods=("GET",))
+def test_apscheduler():
+    print('testing scheduler...')
+    current_app.apscheduler.add_job(
+        func=test_scheduler,
+        trigger="interval",
+        seconds=5,
+        id="test scheduler",
+        name="test scheduler",
+        replace_existing=True
+    )
+    return render_template("blog/index.html")
 
 def get_post(id, check_author=True):
     """Get a post and its author by id.
@@ -53,6 +68,7 @@ def get_post(id, check_author=True):
 
     if check_author and post["author_id"] != g.user["id"]:
         abort(403)
+
     return post
 
 
@@ -86,7 +102,14 @@ def create():
             )
             db.commit()
             return redirect(url_for("blog.index"))
-
+        current_app.apscheduler.add_job(
+        func=test_scheduler,
+        trigger="interval",
+        seconds=5,
+        id="test scheduler",
+        name="test scheduler",
+        replace_existing=True
+    )
     return render_template("blog/create.html")
 
 
@@ -137,23 +160,66 @@ def delete(id):
 @login_required
 def bid(post_id):
     author_id = g.user["id"]
-    amount = request.form["amount"]
+    amount = request.form.get("amount", type=int)
     db = get_db()
     
+    # Get user current info, eg. available fund
+    user = db.execute("SELECT * FROM user WHERE id = ?", (author_id,)).fetchone()
+    total_fund = user["total_fund"] if user["total_fund"] else 0
+    held_fund = user["held_fund"] if user["held_fund"] else 0
+    available_fund = total_fund - held_fund
+
+    # Find post
+    post = db.execute("SELECT * FROM post WHERE id = ?", (post_id,)).fetchone()
+
+    # Check if bid is higher than current one (price/best_ask_price)
+    current_ask_price = post["best_ask_price"] if post["best_ask_price"] else post["price"]
+    if (amount <= current_ask_price):
+        flash('Please place higher bid then current one.')
+        return redirect(url_for("blog.index"))
+
+    # Check to see enough fund to place bid
+    if (total_fund is None or total_fund == 0) or (available_fund < amount):
+        flash('Not enough fund. Deposit more please!')
+        return redirect(url_for("blog.index"))
+
     # Find if there is an existing bid to that post by current user
-    bid = db.execute("SELECT id, post_id FROM bid WHERE post_id = ? AND author_id = ?", (post_id, author_id,)).fetchone()
-    
+    bid = db.execute("SELECT * FROM bid WHERE post_id = ? AND author_id = ?", (post_id, author_id,)).fetchone()
+
     # Create a new bid or update current bid
     if bid is None:
+        # Put an amount of fund on hold for the bid
+        new_held_fund = held_fund + amount
+        db.execute("UPDATE user SET held_fund = ? WHERE id = ?", (new_held_fund, author_id))
+        db.commit()
+
+        # Create a bid of current user if not exist 
         db.execute("INSERT INTO bid(author_id, post_id, ask_price, status) VALUES (?, ?, ?, ?)", (author_id, post_id, amount, 'sucessful'))
         db.commit()
         bid = db.execute("SELECT id FROM bid WHERE id = ? AND author_id = ?", (post_id, author_id)).fetchone()
     else:
+        # If current user has highest bid, don't need to make a higher bid
+        if (bid["id"] == post["best_bid_id"]):
+            flash("You're having a highest bid. Don't need to place higher.")
+
+        # Remove old holding fund on this bid and replace by new ammount
+        new_held_fund = held_fund - bid["ask_price"] + amount
+        db.execute("UPDATE user SET held_fund = ? WHERE id = ?", (new_held_fund, author_id))
+        db.commit()
+
         db.execute("UPDATE bid SET ask_price = ? WHERE id = ?", (amount, bid["id"]))
         db.commit()
 
+    # Update post best current bid
     db.execute("UPDATE post SET best_bid_id = ?, best_ask_price = ? WHERE id = ?", (bid["id"], amount, post_id))
     db.commit()
 
+    # Notify all other bidder that they are outbid
+
+
     return redirect(url_for("blog.index"))
 
+
+def test_scheduler():
+    msg = 'Scheduler run!'
+    print(msg)

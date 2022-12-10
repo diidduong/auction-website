@@ -1,7 +1,15 @@
 import os
 
 from flask import Flask
+from flask_apscheduler import APScheduler
+import logging
 
+# set configuration values
+class Config:
+    SCHEDULER_API_ENABLED = True
+
+logging.basicConfig()
+logging.getLogger('apscheduler').setLevel(logging.DEBUG)
 
 def create_app(test_config=None):
     """Create and configure an instance of the Flask application."""
@@ -35,6 +43,12 @@ def create_app(test_config=None):
 
     db.init_app(app)
 
+
+    # initialize scheduler
+    scheduler = APScheduler()
+    scheduler.api_enabled = True
+    scheduler.init_app(app)
+    scheduler.start()
     # apply the blueprints to the app
     from flaskr import auth, blog
 
@@ -48,3 +62,8 @@ def create_app(test_config=None):
     app.add_url_rule("/", endpoint="index")
 
     return app
+
+app = create_app()
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)

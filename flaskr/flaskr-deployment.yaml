@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flaskr-deployment
+spec:
+  selector:
+    matchLabels:
+      app: flaskr
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: flaskr
+    spec:
+      containers:
+      - name: flaskr
+        image: diidduong/flaskr-rest:latest
+        resources:
+          requests:
+            memory: "400Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5000
+        env:
+        - name: REDIS_HOST
+          value: "redis"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: MINIO_HOST
+          value: minio
+        - name: MINIO_PORT
+          value: "9000"
