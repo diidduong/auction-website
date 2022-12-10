@@ -1,2 +1,26 @@
 {% extends 'base.html' %}
 
+{% block content %}
+  {% for notification in notifications %}
+    <article class="post">
+      <header>
+        <div>
+          <h1>{{ Notifications }}</h1> 
+          
+        </div>
+        {% if g.user['id'] == notification['author_id'] %}
+          <div class="post_id">PostID: {{ notification['post_id'] }}</div>
+          
+        {% endif %}
+      </header>
+      <div class="msg">Message: {{ notification['message'] }}</div>
+     
+      <footer>
+        
+      </footer>
+    </article>
+    {% if not loop.last %}
+      <hr>
+    {% endif %}
+  {% endfor %}
+{% endblock %}

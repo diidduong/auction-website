@@ -238,17 +238,17 @@ def bid(post_id):
         return redirect(url_for("blog.index"))
 
     # Find if there is an existing bid to that post by current user
-    bid = cursor.execute("SELECT * FROM bid WHERE post_id = ? AND author_id = ?", (post_id, author_id,)).fetchone()
+    bid = db.execute("SELECT * FROM bid WHERE post_id = ? AND author_id = ?", (post_id, author_id,)).fetchone()
     bid_id = None
 
     # Create a new bid or update current bid
     if bid is None:
         # Put an amount of fund on hold for the bid
         new_held_fund = held_fund + amount
-        db.execute("UPDATE user SET held_fund = ? WHERE id = ?", (new_held_fund, author_id))
+        cursor.execute("UPDATE user SET held_fund = ? WHERE id = ?", (new_held_fund, author_id))
         # Create a bid of current user if not exist 
-        db.execute("INSERT INTO bid(author_id, post_id, ask_price, status) VALUES (?, ?, ?, ?)", (author_id, post_id, amount, 'sucessful'))
-        db.commit()
+        cursor.execute("INSERT INTO bid(author_id, post_id, ask_price, status) VALUES (?, ?, ?, ?)", (author_id, post_id, amount, 'sucessful'))
+       # db.commit()
 
         # get bid_id
         bid_id = cursor.lastrowid
@@ -271,7 +271,8 @@ def bid(post_id):
     db.commit()
 
     # Notify all other bidder that they are outbid
-    db.close()
+    #db.close()
+    print("bid_id", bid_id)
     return redirect(url_for("blog.index"))
 
 
@@ -292,7 +293,7 @@ def expiring_post(postID, cApp):
         print(" need notify winning bid")
         print("stopping job...")
         #cApp.apscheduler.subscribe(listener_post, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
-
+        listner(postID)
 @bp.route("/test-listner", methods=("GET","POST"))
 def test_listner():
     postID =1
@@ -332,26 +333,31 @@ def listner(postID):
         )
         .fetchone()
     )
-    bestBid_userId = bestBidUserID["author_id"]
-    print("Highers bidder user id: ",bestBid_userId)
+    if(bestBidUserID is not None): #one or many bidders
 
-    postTitle = bestBidUserID["title"]
-    #TODO write notification fro every user
-    notWinningBidMsg = f"Your bid for the {postTitle} was not the highest bid!"
-    winningBidMsg = f"You won with the highest bid for the {postTitle} !"
+        bestBid_userId = bestBidUserID["author_id"]
+        print("Highers bidder user id: ",bestBid_userId)
 
-    for user in userList:
-        if(user == bestBid_userId):
-            msg = winningBidMsg
-        else:
-            msg = notWinningBidMsg
+        postTitle = bestBidUserID["title"]
+        #TODO write notification fro every user
+        notWinningBidMsg = f"Your bid for the {postTitle} was not the highest bid!"
+        winningBidMsg = f"You won with the highest bid for the {postTitle} !"
 
-        db.execute(
-                    "INSERT INTO notification (author_id, post_id, message,unread) VALUES (?, ?, ?, ?)",
-                    (user,postID,msg, 0),
-                )
-        db.commit()
-    print("Successfully added all notifcations to db")
+        for user in userList:
+            if(user == bestBid_userId):
+                msg = winningBidMsg
+            else:
+                msg = notWinningBidMsg
+
+            db.execute(
+                        "INSERT INTO notification (author_id, post_id, message,unread) VALUES (?, ?, ?, ?)",
+                        (user,postID,msg, 0),
+                    )
+            db.commit()
+        print("Successfully added all notifcations to db")
+    else:
+         
+        print("No bidders")
 
 
 
@@ -359,7 +365,7 @@ def listner(postID):
 def notification():
     """Show all the posts, most recent first."""
     db = get_db()
-    notifications = db.execute( "SELECT id,author_id, post_id, message FROM notification WHERE author_id =  ?",( g.user["id"] )).fetchall()
+    notifications = db.execute( "SELECT id,author_id, post_id, message FROM notification WHERE author_id =  ?",( g.user["id"], )).fetchall()
     
 
     return render_template("blog/notifications.html", notifications = notifications)
