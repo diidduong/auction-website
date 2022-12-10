@@ -50,6 +50,7 @@ def create_app(test_config=None):
     scheduler.api_enabled = True
     scheduler.init_app(app)
     scheduler.start()
+    #scheduler.subscribe(listener, {JobAcquired, JobReleased})
     #appCTX = app.app_context()
     #appCTX.push()
     
