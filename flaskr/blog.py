@@ -19,7 +19,7 @@ def index():
     """Show all the posts, most recent first."""
     db = get_db()
     posts = db.execute(
-        "SELECT p.id, title, description, image, price, best_ask_price, p.status, p.created, p.author_id, username, u.firstname, u.lastname"
+        "SELECT p.id, title, description, image, price, duration, best_ask_price, p.status, p.created, p.author_id, username, u.firstname, u.lastname"
         " FROM post p JOIN user u ON p.author_id = u.id"
         " ORDER BY p.created DESC"
     ).fetchall()
@@ -99,6 +99,7 @@ def create():
         image = request.form["image"] # use URL, TODO: use binary
         price = request.form["price"] # price is integer
         duration = request.form["duration"] #time in seconds
+        disabledBid = 0 # used for disable bids for post
         status = 'available' # status enum available, bidding, sold
         error = None
 
@@ -114,8 +115,8 @@ def create():
         else:
             db = get_db()
             db.execute(
-                "INSERT INTO post (title, description, image, price, duration, status, author_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (title, description, image, price, duration,status, g.user["id"]),
+                "INSERT INTO post (title, description, image, price, duration, disabledBid,status, author_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (title, description, image, price, duration,disabledBid,status, g.user["id"]),
             )
             db.commit()
 
@@ -254,7 +255,7 @@ def test_scheduler():
     msg = 'Scheduler run!'
     print(msg)
 
-#@bp.route("/bidTime-apscheduler", methods=("GET",))
+#@bp.route("/bidTime-apscheduler", methods=("GET","Post"))
 def bidTime_scheduler(postID,jobId,cApp):
     with cApp.app_context():
         msg = 'bidScheduler run!'
@@ -262,17 +263,20 @@ def bidTime_scheduler(postID,jobId,cApp):
         print(msg)
         #getting duration 
         post = db.execute(
-            "SELECT p.id,duration "
+            "SELECT p.id,duration,disabledBid "
             " FROM post p "
             " WHERE p.id == ?", (postID,),
         ).fetchone()
-
+        
         duration = post['duration']
-        msg1 ="past duration: "+ str(duration)
+        msg1 ="past duration: "+ str(duration)+ "disabledBid: "+str(post['disabledBid'])
         print(msg1)
         if(duration <= 0):
             #TODO disable bidding on post
-            print("need to disable bids and notify winning bid")
+            print("Disabling bids")
+            update = (db.execute( "UPDATE post SET disabledBid = ? WHERE id = ?", (1,post['id']) )  )
+            db.commit()
+            print(" need notify winning bid")
             print("stopping job...")
             current_app.apscheduler.remove_job(jobId)
         else:
@@ -281,5 +285,5 @@ def bidTime_scheduler(postID,jobId,cApp):
             update = (db.execute( "UPDATE post SET duration = ? WHERE id = ?", (newDuration,post['id']) )  )
             db.commit()
             print("updated db with new duration")
-
+    #return redirect(url_for("blog.index"))
     #return render_template("blog/index.html")

@@ -12,7 +12,8 @@
     <article class="post">
       <header>
         <div>
-          <h1>{{ post['title'] }}</h1>
+          <h1>{{ post['title'] }}</h1> 
+          <div class="Duration" id = 'duration'>Duration: {{ post['duration'] }} </div> 
           <div class="about">by {{ post['firstname'] }} {{ post['lastname'] }} on {{ post['created'].strftime('%Y-%m-%d') }}</div>
         </div>
         {% if g.user['id'] == post['author_id'] %}
@@ -26,7 +27,7 @@
         {% if g.user['id'] != post['author_id'] %}
           <form action="{{ url_for('blog.bid', post_id=post['id']) }}" method="post">
             <input type="number" name="amount" id="amount" placeholder="Amount" required>
-            <input type="submit" value="Bid">
+            <input type="submit" value="Bid" disabled="{ post['disabledBid'] }" >
           </form>
         {% endif %}
       </footer>
@@ -36,3 +37,5 @@
     {% endif %}
   {% endfor %}
 {% endblock %}
+
+
