@@ -289,4 +289,77 @@ def expiring_post(postID, cApp):
         print("Disabling bids")
         db.execute("UPDATE post SET disabledBid = ? ,status= ? WHERE id = ?", (1, "Not Available", postID))
         db.commit()
+        print(" need notify winning bid")
+        print("stopping job...")
+        #cApp.apscheduler.subscribe(listener_post, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
+
+@bp.route("/test-listner", methods=("GET","POST"))
+def test_listner():
+    postID =1
+    print('testing listner...')
+    listner(postID)
+    return render_template("blog/index.html")    
+
+
+def listner(postID):
+    db = get_db()
+
+    #grabbing all users
+    allUsers = (
+        db.execute(
+            "SELECT p.id, b.author_id "
+            " FROM post p JOIN bid b ON p.id = b.post_id"
+            " WHERE p.id = ?",
+            (postID,),
+        )
+        .fetchall()
+    )
+    print("After query: getting all users")
+    userList_sql =list(allUsers)
+    userList =[]
+    for row in userList_sql:
+        user = row["author_id"]
+        userList.append(user)
+    print(userList)
+
+    #grabbing highest bidder user id
+    bestBidUserID =(
+        db.execute(
+            "SELECT p.id, p.title, b.author_id "
+            " FROM post p JOIN bid b ON p.best_bid_id = b.id"
+            " WHERE p.id = ?",
+            (postID,),
+        )
+        .fetchone()
+    )
+    bestBid_userId = bestBidUserID["author_id"]
+    print("Highers bidder user id: ",bestBid_userId)
+
+    postTitle = bestBidUserID["title"]
+    #TODO write notification fro every user
+    notWinningBidMsg = f"Your bid for the {postTitle} was not the highest bid!"
+    winningBidMsg = f"You won with the highest bid for the {postTitle} !"
+
+    for user in userList:
+        if(user == bestBid_userId):
+            msg = winningBidMsg
+        else:
+            msg = notWinningBidMsg
+
+        db.execute(
+                    "INSERT INTO notification (author_id, post_id, message,unread) VALUES (?, ?, ?, ?)",
+                    (user,postID,msg, 0),
+                )
+        db.commit()
+    print("Successfully added all notifcations to db")
+
+
+
+@bp.route("/notifications")
+def notification():
+    """Show all the posts, most recent first."""
+    db = get_db()
+    notifications = db.execute( "SELECT id,author_id, post_id, message FROM notification WHERE author_id =  ?",( g.user["id"] )).fetchall()
     
+
+    return render_template("blog/notifications.html", notifications = notifications)

@@ -4,6 +4,7 @@
 DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS post;
 DROP TABLE IF EXISTS bid;
+DROP TABLE IF EXISTS notification;
 
 CREATE TABLE user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,6 +52,7 @@ CREATE TABLE notification (
   author_id INTEGER NOT NULL,
   post_id INTEGER NOT NULL,
   message TEXT,
+  unread INTEGER NOT NULL,
   FOREIGN KEY (author_id) REFERENCES user (id),
   FOREIGN KEY (post_id) REFERENCES post (id)
 );
