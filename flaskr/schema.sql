@@ -44,7 +44,7 @@ CREATE TABLE bid (
   status TEXT NOT NULL,
   FOREIGN KEY (author_id) REFERENCES user (id),
   FOREIGN KEY (post_id) REFERENCES post (id)
-)
+);
 
 CREATE TABLE notification (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -53,4 +53,4 @@ CREATE TABLE notification (
   message TEXT,
   FOREIGN KEY (author_id) REFERENCES user (id),
   FOREIGN KEY (post_id) REFERENCES post (id)
-)
+);

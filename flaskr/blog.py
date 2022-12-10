@@ -15,7 +15,6 @@ import time
 from flaskr.auth import login_required
 from flaskr.db import get_db
 
-from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, JobExecutionEvent
 bp = Blueprint("blog", __name__)
 
 
@@ -195,6 +194,8 @@ def delete(id):
     author of the post.
     """
     get_post(id)
+    #TODO: Delete schedule first before delete post
+
     db = get_db()
     db.execute("DELETE FROM post WHERE id = ?", (id,))
     db.commit()
@@ -207,7 +208,8 @@ def bid(post_id):
     author_id = g.user["id"]
     amount = request.form.get("amount", type=int)
     db = get_db()
-    
+    cursor = db.cursor()
+
     # Get user current info, eg. available fund
     user = db.execute("SELECT * FROM user WHERE id = ?", (author_id,)).fetchone()
     total_fund = user["total_fund"] if user["total_fund"] else 0
@@ -215,7 +217,7 @@ def bid(post_id):
     available_fund = total_fund - held_fund
 
     # Find post
-    post = db.execute("SELECT * FROM post WHERE id = ?", (post_id,)).fetchone()
+    post = cursor.execute("SELECT * FROM post WHERE id = ?", (post_id,)).fetchone()
 
     # Check if the post is still available
     disabledBid = post['disabledBid']
@@ -236,20 +238,22 @@ def bid(post_id):
         return redirect(url_for("blog.index"))
 
     # Find if there is an existing bid to that post by current user
-    bid = db.execute("SELECT * FROM bid WHERE post_id = ? AND author_id = ?", (post_id, author_id,)).fetchone()
+    bid = cursor.execute("SELECT * FROM bid WHERE post_id = ? AND author_id = ?", (post_id, author_id,)).fetchone()
+    bid_id = None
 
     # Create a new bid or update current bid
     if bid is None:
         # Put an amount of fund on hold for the bid
         new_held_fund = held_fund + amount
         db.execute("UPDATE user SET held_fund = ? WHERE id = ?", (new_held_fund, author_id))
-        db.commit()
-
         # Create a bid of current user if not exist 
         db.execute("INSERT INTO bid(author_id, post_id, ask_price, status) VALUES (?, ?, ?, ?)", (author_id, post_id, amount, 'sucessful'))
         db.commit()
-        bid = db.execute("SELECT id FROM bid WHERE id = ? AND author_id = ?", (post_id, author_id)).fetchone()
+
+        # get bid_id
+        bid_id = cursor.lastrowid
     else:
+        bid_id = bid["id"]
         # If current user has highest bid, don't need to make a higher bid
         if (bid["id"] == post["best_bid_id"]):
             flash("You're having a highest bid. Don't need to place higher.")
@@ -257,23 +261,24 @@ def bid(post_id):
         # Remove old holding fund on this bid and replace by new ammount
         new_held_fund = held_fund - bid["ask_price"] + amount
         db.execute("UPDATE user SET held_fund = ? WHERE id = ?", (new_held_fund, author_id))
-        db.commit()
-
+        # update existing bid
         db.execute("UPDATE bid SET ask_price = ? WHERE id = ?", (amount, bid["id"]))
         db.commit()
 
+
     # Update post best current bid
-    db.execute("UPDATE post SET best_bid_id = ?, best_ask_price = ? WHERE id = ?", (bid["id"], amount, post_id))
+    db.execute("UPDATE post SET best_bid_id = ?, best_ask_price = ? WHERE id = ?", (bid_id, amount, post_id))
     db.commit()
 
     # Notify all other bidder that they are outbid
-
+    db.close()
     return redirect(url_for("blog.index"))
 
 
 def test_scheduler():
     msg = 'Scheduler run!'
     print(msg)
+
 
 def expiring_post(postID, cApp):
     with cApp.app_context():
@@ -282,12 +287,6 @@ def expiring_post(postID, cApp):
         print(msg)
         # getting duration 
         print("Disabling bids")
-        update = db.execute("UPDATE post SET disabledBid = ? ,status= ? WHERE id = ?", (1, "Not Available", postID))
+        db.execute("UPDATE post SET disabledBid = ? ,status= ? WHERE id = ?", (1, "Not Available", postID))
         db.commit()
-        print(" need notify winning bid")
-        print("stopping job...")
-        cApp.apscheduler.subscribe(listener_post, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
     
-def listener_post(event):
-    print(f"Received {event.__class__.__name__}")
-    #TODO : get all users based on post  and notify all user here
