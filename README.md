@@ -37,3 +37,8 @@ old school phone - https://images.unsplash.com/photo-1557180295-76eee20ae8aa?ixl
 rustic pen - https://images.unsplash.com/photo-1518674660708-0e2c0473e68e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fG9iamVjdHxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60
 stool - https://images.unsplash.com/photo-1503602642458-232111445657?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTF8fG9iamVjdHxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60
 
+
+## Citing Resources
+Drop down menu reference (base.html) : 
+  - https://blog.hubspot.com/website/html-dropdown
+  - https://stackoverflow.com/questions/2000656/using-href-links-inside-option-tag
