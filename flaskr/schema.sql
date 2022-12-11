@@ -63,12 +63,12 @@ INSERT INTO user (username, password, firstname, lastname, total_fund, held_fund
   ("testuser3", "123", "Test", "User3", "0", "0");
 
 INSERT INTO post (author_id, created, title, description, image, price, duration, disabledBid, status) VALUES
-  ("1", CURRENT_TIMESTAMP, "title1", "description", "image", 2500, 60, 0, "expired"),
-  ("1", CURRENT_TIMESTAMP, "title1", "description", "image", 100, 120, 0, "expired"),
-  ("2", CURRENT_TIMESTAMP, "title1", "description", "image", 500, 120, 0, "expired"),
-  ("1", CURRENT_TIMESTAMP, "title1", "description", "image", 1000, 240, 0, "expired"),
-  ("3", CURRENT_TIMESTAMP, "title1", "description", "image", 10000, 3600, 0, "expired"),
-  ("2", CURRENT_TIMESTAMP, "title1", "description", "image", 1500, 30, 0, "expired"),
-  ("1", CURRENT_TIMESTAMP, "title1", "description", "image", 2500, 480, 0, "expired");
+  ("1", CURRENT_TIMESTAMP, "title1", "description", "image", 2500, 60, 1, "expired"),
+  ("1", CURRENT_TIMESTAMP, "title1", "description", "image", 100, 120, 1, "expired"),
+  ("2", CURRENT_TIMESTAMP, "title1", "description", "image", 500, 120, 1, "expired"),
+  ("1", CURRENT_TIMESTAMP, "title1", "description", "image", 1000, 240, 1, "expired"),
+  ("3", CURRENT_TIMESTAMP, "title1", "description", "image", 10000, 3600, 1, "expired"),
+  ("2", CURRENT_TIMESTAMP, "title1", "description", "image", 1500, 30, 1, "expired"),
+  ("1", CURRENT_TIMESTAMP, "title1", "description", "image", 2500, 480, 1, "expired");
 
 

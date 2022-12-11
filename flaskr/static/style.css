@@ -135,11 +135,27 @@ input[type=submit] {
   min-width: 10em;
 }
 
-img {
+.container {
+  display: flex;
+  width: 100%;
+  margin:10px
+}
+
+.colum {
+  flex-direction: column;
+  margin-left: 10px;
+  flex: 1;
+}
+
+.image {
   height: 100px;
   width: 100px;
 }
 
+.image img {
+
+  padding: 5px;
+}
 
 .dropdown {
   display: inline-block;
@@ -170,3 +186,4 @@ img {
   color: #FFFFFF;
   background-color: #00A4BD;
 }
+
