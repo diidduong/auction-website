@@ -6,8 +6,8 @@
 
 {% block content %}
   <form method="post">
-    <div class="total_fund">Current Balance: {{ g.user['total_fund'] }}</div>
-    <div class="held_fund">Fund On Hold: {{ g.user['held_fund'] }}</div>
+    <div class="total_fund">Current Balance: {{ "${:,}".format(g.user['total_fund']) }}</div>
+    <div class="held_fund">Fund On Hold: {{ "${:,}".format(g.user['held_fund']) }}</div>
     <label for="amount">Amount</label>
     <input name="amount" id="amount" required>
     <input type="submit" value="Withdraw">

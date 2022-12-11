@@ -398,7 +398,6 @@ def listener(postID):
         print("No bidders")
 
 
-
 @bp.route("/notifications")
 def notifications():
     """Show all the posts, most recent first."""

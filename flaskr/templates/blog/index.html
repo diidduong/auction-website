@@ -13,7 +13,6 @@
       <header>
         <div>
           <h1>{{ post['title'] }}</h1> 
-          <div class="Duration" id = 'duration'>Duration: {{ post['duration'] }} </div> 
           <div class="about">by {{ post['firstname'] }} {{ post['lastname'] }} on {{ post['created'].strftime('%Y-%m-%d') }}</div>
           <img class="image" src="{{post['image']}}">
         </div>
