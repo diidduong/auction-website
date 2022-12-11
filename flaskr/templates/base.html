@@ -1,11 +1,24 @@
 <!doctype html>
+
 <title>{% block title %}{% endblock %} - Auction </title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <nav>
   <h1><a href="{{ url_for('index') }}">Auction World</a></h1>
   <ul>
     {% if g.user %}
-      <li><span>{{ g.user['total_fund'] }}, {{ g.user['held_fund'] }} | {{ g.user['firstname'] }} {{ g.user['lastname'] }}</span>
+      <li><span>{{ g.user['total_fund'] }}, {{ g.user['held_fund'] }} | {{ g.user['firstname'] }} {{ g.user['lastname'] }}</span> 
+      <div class="dropdown">
+        <button>Ranking Posts</button>
+        <div class="dropdown-content">
+          <a  href="{{ url_for('ranking.get_top_freq_sellers') }}">get_top_freq_sellers</a>
+          <a  href="{{ url_for('ranking.get_top_freq_buyers') }}">get_top_freq_buyers</a>
+          <a  href="{{ url_for('ranking.get_top_purchase') }}">get_top_purchase</a>
+          <a  href="{{ url_for('ranking.get_top_ask_price') }}">get_top_ask_price</a>
+        </div>
+      </div> 
+      
+      
+      </script> 
       <li><a href="{{ url_for('blog.notifications') }}">Notifications</a>
       <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
     {% else %}
