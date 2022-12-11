@@ -8,8 +8,8 @@
     {% if g.user %}
       <li><h2 style="color: rgb(121, 152, 255);font-size: xx-large;position: relative;left: 200px; top:-5px">User: {{ g.user['firstname'] }} {{ g.user['lastname'] }} </h2></li>
       <li><div style="background-color:#c7e2ec;width:fit-content;position: relative;left: 308px;top: -9px;">
-        <h5 style="color: rgb(121, 152, 255);position: relative;left: 1px; top:0px">Total Fund: {{ g.user['total_fund'] }} </h5>
-        <h5 style="color: rgb(121, 152, 255);position: relative;left: 1px; top:1px">Held Funds: {{ g.user['held_fund'] }}  </h5>
+        <h5 style="color: rgb(121, 152, 255);position: relative;left: 1px; top:0px">Total Fund: {{ "${:,}".format(g.user['total_fund']) }} </h5>
+        <h5 style="color: rgb(121, 152, 255);position: relative;left: 1px; top:1px">Held Funds: {{ "${:,}".format(g.user['held_fund']) }}  </h5>
       </div></li>
       <li>
         <div class="dropdown" style ="position:relative;top:52px;left:0px;">
