@@ -6,7 +6,7 @@
   <ul>
     {% if g.user %}
       <li><span>{{ g.user['total_fund'] }}, {{ g.user['held_fund'] }} | {{ g.user['firstname'] }} {{ g.user['lastname'] }}</span>
-      <li><a href="{{ url_for('blog.notification') }}">Notifications</a>
+      <li><a href="{{ url_for('blog.notifications') }}">Notifications</a>
       <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
     {% else %}
       <li><a href="{{ url_for('auth.register') }}">Register</a>
