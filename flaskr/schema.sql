@@ -21,7 +21,7 @@ CREATE TABLE post (
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   title TEXT NOT NULL,
   description TEXT NOT NULL,
-  image TEXT NOT NULL,
+  image BLOB NOT NULL,
   price INTEGER NOT NULL,
   best_ask_price INTEGER,
   best_bid_id INTEGER,

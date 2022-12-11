@@ -95,11 +95,10 @@ def login():
             "SELECT * FROM user WHERE username = ?", (username,)
         ).fetchone()
 
-        # TODO: Only tell "Incorrect Credentials" if either is wrong"
         if user is None:
-            error = "Incorrect username."
+            error = "Incorrect Credentials."
         elif not check_password_hash(user["password"], password):
-            error = "Incorrect password."
+            error = "Incorrect Credentials."
 
         if error is None:
             # store the user id in a new session and return to the index

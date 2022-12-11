@@ -19,6 +19,7 @@
           <a class="action" href="{{ url_for('blog.update', id=post['id']) }}">Edit</a>
         {% endif %}
       </header>
+      <img src={{ post['image'] }} width="400" height="400"><br><br>
       <div class="status">Status: {{ post['status'] }}</div>
       <div class="price">Original Price: ${{ "{:,}".format(post['price']) }}</div>
       <div class="top_ask_price">Ask Price: {{ "${:,}".format(post['best_ask_price']) if post['best_ask_price'] else 'None' }}</div>
