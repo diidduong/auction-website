@@ -23,9 +23,3 @@ push:
 	docker tag flaskr-rest $(DOCKERUSER)/flaskr-rest:latest
 	docker push $(DOCKERUSER)/flaskr-rest:latest
 
-deploy:
-	kubectl apply -f ./flaskr/flaskr-deployment.yaml
-
-delete:
-	kubectl delete deployment flaskr-deployment
-
