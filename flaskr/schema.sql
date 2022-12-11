@@ -25,7 +25,7 @@ CREATE TABLE post (
   price INTEGER NOT NULL,
   best_ask_price INTEGER,
   best_bid_id INTEGER,
-  status TEXT NOT NULL,
+  status TEXT CHECK(status IN ('A','B','S')) NOT NULL DEFAULT 'A',
   FOREIGN KEY (author_id) REFERENCES user (id)
   FOREIGN KEY (best_bid_id) REFERENCES bid (id)
 );

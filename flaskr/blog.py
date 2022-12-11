@@ -85,7 +85,7 @@ def create():
         #image = request.form["image"] # use URL, TODO: use binary
         image = request.files['file'] 
         price = request.form["price"] # price is integer
-        status = 'available' # status enum available, bidding, sold
+        status = 'A' # status enum available, bidding, sold
         error = None
         if image and allowed_file(image.filename):
             path = os.path.join(UPLOADS_PATH, secure_filename(image.filename))
