@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Deposit{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <label for="cardnumber">Card Number</label>
+    <input type="number" name="cardnumber" id="cardnumber">
+    <label for="exp">Exp</label>
+    <input name="exp" id="password">
+    <label for="cvv">CVV</label>
+    <input name="cvv" id="cvv">
+    <label for="amount">Amount</label>
+    <input name="amount" id="amount" required>
+    <input type="submit" value="Deposit">
+  </form>
+{% endblock %}

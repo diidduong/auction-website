@@ -110,7 +110,7 @@ def create():
         description = request.form["description"]
         image = request.form["image"] # use URL, TODO: use binary
         price = request.form["price"] # price is integer
-        duration = int(request.form["duration"]) #time in seconds
+        duration = request.form.get("duration", type=int) #time in seconds
         disabledBid = 0 # used for disable bids for post
         status = 'available' # status enum available, bidding, sold
         error = None

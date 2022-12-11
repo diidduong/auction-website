@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Account{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <article>
+    <div class="total_fund">Current Balance: {{ g.user['total_fund'] }}</div>
+    <div class="held_fund">Fund On Hold: {{ g.user['held_fund'] }}</div>
+    <a class="action" href="{{ url_for('account.deposit') }}">Deposit</a>
+    <a class="action" href="{{ url_for('account.withdrawal') }}">Withdrawal</a>
+  </article>
+{% endblock %}

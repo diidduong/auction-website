@@ -13,7 +13,7 @@ CREATE TABLE user (
     firstname TEXT NOT NULL,
     lastname TEXT NOT NULL,
     total_fund INTEGER,
-    held_fund INTEGER
+    held_fund INTEGER DEFAULT 0 NOT NULL
 );
 
 
