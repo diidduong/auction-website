@@ -6,6 +6,34 @@
 
 {% block content %}
     {% for post in posts %}
+      <article class="post">
+        <header>
+          <div>
+            <h1>{{ post['title'] }}</h1> 
+            <div class="about">by {{ post['firstname'] }} {{ post['lastname'] }} on {{ post['created'].strftime('%Y-%m-%d') }}</div>
+            <img class="image" src="{{post['image']}}">
+          </div>
+        </header>
+        <div class="status">Status: {{ post['status'] }}</div>
+        <div class="price">Original Price: ${{ "{:,}".format(post['price']) }}</div>
+        <div class="top_ask_price">Ask Price: {{ "${:,}".format(post['best_ask_price']) if post['best_ask_price'] else 'None' }}</div>
+      </article>
+      {% if not loop.last %}
+        <hr>
+      {% endif %}
+    {% endfor %}
 
+    {% for user in users %}
+      <article class="user">
+        <header>
+          <div>
+            <h1>{{ user['firstname'] }} {{ user['lastname'] }}</h1> 
+          </div>
+        </header>
+        <div class="count">Count: {{ user['COUNT(*)'] }}</div>
+      </article>
+      {% if not loop.last %}
+        <hr>
+      {% endif %}
     {% endfor %}
 {% endblock %}
