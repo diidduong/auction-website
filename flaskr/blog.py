@@ -363,12 +363,13 @@ def listener(postID):
         print("Highers bidder user id: ",bestBid_userId)
 
         postTitle = post["title"]
-        #TODO write notification fro every user
-        notWinningBidMsg = f"Your bid for the {postTitle} was not the highest bid!"
-        winningBidMsg = f"You won with the highest bid for the {postTitle} !"
         price = post["price"]
         ask_price = post["best_ask_price"]
-
+        notWinningBidMsg = f"Your bid for the {postTitle} was not the highest bid!"
+        winningBidMsg = f"You won with the highest bid for the {postTitle} !"
+        sellerMsg = f"Congratulations your {postTitle} sold for {ask_price}$ ! Your funds have been sent to your account..."
+        trollThankYouMsg = "Thank you for auctioning your items with us. We know there are alot of auction websites but here at Auction World we are proud representatives of niche collectors and sellers."
+        #write notification fro every user involved in post(bidders, seller, winner)
         for user in userList:
             if(user == bestBid_userId):
                 msg = winningBidMsg
@@ -376,10 +377,13 @@ def listener(postID):
                 # Get winner and seller for money transfer
                 winner = db.execute("SELECT * FROM user WHERE id = ?", (bestBid_userId, )).fetchone()
                 seller = db.execute("SELECT * FROM user WHERE id = ?", (post["post_author_id"], )).fetchone()
+                sellerNotifications = db.execute("SELECT * FROM notification WHERE author_id = ?", (post["post_author_id"], )).fetchall()
                 # Transfer money from winner to seller 
                 db.execute("UPDATE user SET total_fund = ?, held_fund = ? WHERE id = ?", (winner["total_fund"] - ask_price, winner["held_fund"] - ask_price, winner["id"]))
                 db.execute("UPDATE user SET total_fund = ? WHERE id = ?", (seller["total_fund"] + ask_price, seller["id"]))
-                
+                db.execute("INSERT INTO notification (author_id, post_id, message,unread) VALUES (?, ?, ?, ?)",(seller["id"],postID,sellerMsg, 0),)
+                if(sellerNotifications is None):
+                    db.execute("INSERT INTO notification (author_id, post_id, message,unread) VALUES (?, ?, ?, ?)",(seller["id"],postID,trollThankYouMsg, 0),)
             else:
                 msg = notWinningBidMsg
 
