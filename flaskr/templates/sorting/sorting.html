@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Posts(Sorted by: {{sortType}} ){% endblock %}</h1>
+  {% if g.user %}
+    <a class="action" href="{{ url_for('blog.create') }}">New</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  {% for post in posts %}
+    <article class="post">
+      <header>
+        <div>
+          <h1>{{ post['title'] }}</h1> 
+          <div class="Duration" id = 'duration'>Duration: {{ post['duration'] }} </div> 
+          <div class="about">by {{ post['firstname'] }} {{ post['lastname'] }} on {{ post['created'].strftime('%Y-%m-%d') }}</div>
+          <img class="image" src="{{post['image']}}">
+        </div>
+        {% if g.user['id'] == post['author_id'] %}
+          <a class="action" href="{{ url_for('blog.update', id=post['id']) }}">Edit</a>
+        {% endif %}
+      </header>
+      <div class="status">Status: {{ post['status'] }}</div>
+      <div class="price">Original Price: ${{ "{:,}".format(post['price']) }}</div>
+      <div class="top_ask_price">Ask Price: {{ "${:,}".format(post['best_ask_price']) if post['best_ask_price'] else 'None' }}</div>
+      <footer>
+        {% if (g.user['id'] != post['author_id']) and (post['disabledBid'] == 0) %}
+          <form action="{{ url_for('blog.bid', post_id=post['id']) }}" method="post">
+            <input type="number" name="amount" id="amount" placeholder="Amount" required>
+            <input type="submit" value="Bid"  >
+          </form>
+          {% if g.user['id'] != post['bestBid_userId']%}
+            <form action="{{ url_for('blog.cancel_bid', post_id=post['id']) }}" method="post">
+              <input class="danger" type="submit" value="Cancel Bid" onclick="return confirm('Are you sure?');">
+            </form>
+          {% endif %}
+        {% endif %}
+      </footer>
+    </article>
+    {% if not loop.last %}
+      <hr>
+    {% endif %}
+  {% endfor %}
+{% endblock %}
+
+

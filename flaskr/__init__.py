@@ -55,11 +55,12 @@ def create_app(test_config=None):
     #appCTX.push()
     
     # apply the blueprints to the app
-    from flaskr import auth, blog, ranking, account
+    from flaskr import auth, blog, ranking, account, sorting
 
     app.register_blueprint(auth.bp)
     app.register_blueprint(blog.bp)
     app.register_blueprint(ranking.bp)
+    app.register_blueprint(sorting.bp)
     app.register_blueprint(account.bp)
 
     # make url_for('index') == url_for('blog.index')
