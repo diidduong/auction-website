@@ -217,7 +217,7 @@ def bid(post_id):
     available_fund = total_fund - held_fund
 
     # Find post
-    post = cursor.execute("SELECT * FROM post WHERE id = ?", (post_id,)).fetchone()
+    post = db.execute("SELECT * FROM post WHERE id = ?", (post_id,)).fetchone()
 
     # Check if the post is still available
     disabledBid = post['disabledBid']
@@ -275,6 +275,29 @@ def bid(post_id):
     print("bid_id", bid_id)
     return redirect(url_for("blog.index"))
 
+@bp.route("/<int:post_id>/cancel_bid", methods=("POST",))
+@login_required
+def cancel_bid(post_id):
+    db = get_db()
+    author_id = g.user["id"]
+    held_fund = g.user["held_fund"]
+
+    post = db.execute("SELECT * FROM post WHERE id = ?", (post_id,)).fetchone()
+    bid = db.execute("SELECT * FROM bid WHERE post_id = ? AND author_id = ?", (post_id, author_id,)).fetchone()
+
+    if bid is None:
+        flash("You have no bid on this item")
+        return redirect(url_for("blog.index"))
+    
+    if post["best_bid_id"] != bid["id"]:
+        db.execute("UPDATE user SET held_fund = ? WHERE id = ?", (held_fund - bid["ask_price"], author_id))
+        db.execute("UPDATE bid SET status = ? WHERE id = ?", ("cancelled", bid["id"]))
+        db.commit()
+        flash("Cancel bid successfully")
+    else:
+        flash("Cannot cancel bid when having highest bid")
+
+    return redirect(url_for("blog.index"))
 
 def test_scheduler():
     msg = 'Scheduler run!'
@@ -293,17 +316,17 @@ def expiring_post(postID, cApp):
         print(" need notify winning bid")
         print("stopping job...")
         #cApp.apscheduler.subscribe(listener_post, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
-        listner(postID)
+        listener(postID)
 
 @bp.route("/test-listner", methods=("GET","POST"))
 def test_listner():
     postID =1
     print('testing listner...')
-    listner(postID)
+    listener(postID)
     return render_template("blog/index.html")
 
 
-def listner(postID):
+def listener(postID):
     db = get_db()
 
     #grabbing all users

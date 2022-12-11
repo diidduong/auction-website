@@ -30,6 +30,11 @@
             <input type="number" name="amount" id="amount" placeholder="Amount" required>
             <input type="submit" value="Bid"  >
           </form>
+          {% if g.user['id'] != post['bestBid_userId']%}
+            <form action="{{ url_for('blog.cancel_bid', post_id=post['id']) }}" method="post">
+              <input class="danger" type="submit" value="Cancel Bid" onclick="return confirm('Are you sure?');">
+            </form>
+          {% endif %}
         {% endif %}
       </footer>
     </article>
