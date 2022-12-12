@@ -31,7 +31,8 @@ def index():
     dictrows = [dict(row) for row in posts]
     i=0 #remove after encoding all items 
     for post in dictrows:
-        image=decode_string(post['image'])
+        try: image=decode_string(post['image'])
+        except: image = post['image']
         post['image']=image
         if i==0:
             break
