@@ -61,18 +61,21 @@ def get_top_purchase():
     db = get_db()
 
     posts = db.execute(
-        "SELECT p.id, title, description, image, price, duration, best_ask_price, p.status, p.created, p.author_id, username, u.firstname, u.lastname, p.disabledBid, p.image"
+        "SELECT p.id, title, description, image, price, duration, best_ask_price, p.status, p.created, p.author_id, username, u.firstname, u.lastname, p.disabledBid"
         " FROM post p JOIN user u ON p.author_id = u.id AND p.best_ask_price NOT NULL"
         " ORDER BY p.best_ask_price DESC"
     ).fetchall()
 
     dictrows = [dict(row) for row in posts]
     for post in dictrows:
+        print(post)
         try: image=decode_string(post['image'])
         except: image = post['image']
         post['image']=image
+        print(post)
 
-    return render_template("ranking/ranking.html", posts=posts)
+
+    return render_template("ranking/ranking.html", posts=dictrows)
 
 # Highest price
 @bp.route("/ranking/top-price")
@@ -80,18 +83,20 @@ def get_top_ask_price():
     db = get_db()
 
     posts = db.execute(
-        "SELECT p.id, title, description, image, price, duration, best_ask_price, p.status, p.created, p.author_id, username, u.firstname, u.lastname, p.disabledBid, p.image"
+        "SELECT p.id, title, description, image, price, duration, best_ask_price, p.status, p.created, p.author_id, username, u.firstname, u.lastname, p.disabledBid"
         " FROM post p JOIN user u ON p.author_id = u.id AND p.price NOT NULL"
         " ORDER BY p.price DESC"
     ).fetchall()
 
     dictrows = [dict(row) for row in posts]
     for post in dictrows:
+        print(post)
+
         try: image=decode_string(post['image'])
         except: image = post['image']
         post['image']=image
 
-    return render_template("ranking/ranking.html", posts=posts)
+    return render_template("ranking/ranking.html", posts=dictrows)
 
 def encode_string(text):
     message_bytes = text.encode('ascii')
