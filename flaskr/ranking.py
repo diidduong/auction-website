@@ -7,6 +7,7 @@ from flask import request
 from flask import url_for
 from flask import current_app
 from werkzeug.exceptions import abort
+import base64
 from datetime import *
 from dateutil.relativedelta import *
 from dateutil import parser
@@ -65,6 +66,12 @@ def get_top_purchase():
         " ORDER BY p.best_ask_price DESC"
     ).fetchall()
 
+    dictrows = [dict(row) for row in posts]
+    for post in dictrows:
+        try: image=decode_string(post['image'])
+        except: image = post['image']
+        post['image']=image
+
     return render_template("ranking/ranking.html", posts=posts)
 
 # Highest price
@@ -78,5 +85,22 @@ def get_top_ask_price():
         " ORDER BY p.price DESC"
     ).fetchall()
 
+    dictrows = [dict(row) for row in posts]
+    for post in dictrows:
+        try: image=decode_string(post['image'])
+        except: image = post['image']
+        post['image']=image
+
     return render_template("ranking/ranking.html", posts=posts)
 
+def encode_string(text):
+    message_bytes = text.encode('ascii')
+    base64_bytes = base64.b64encode(message_bytes)
+    base64_message = base64_bytes.decode('ascii')
+    return base64_message
+
+def decode_string(text):
+    base64_bytes=text.encode('ascii')
+    msg_bytes=base64.b64decode(base64_bytes)
+    decoded_text=msg_bytes.decode('ascii')
+    return decoded_text
