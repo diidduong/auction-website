@@ -12,6 +12,7 @@ from dateutil.relativedelta import *
 from dateutil import parser
 import calendar
 import time
+import base64
 from flaskr.auth import login_required
 from flaskr.db import get_db
 
@@ -27,8 +28,14 @@ def index():
         " FROM post p JOIN user u ON p.author_id = u.id"
         " ORDER BY p.created DESC"
     ).fetchall()
-
-    return render_template("blog/index.html", posts=posts)
+    dictrows = [dict(row) for row in posts]
+    i=0 #remove after encoding all items 
+    for post in dictrows:
+        image=decode_string(post['image'])
+        post['image']=image
+        if i==0:
+            break
+    return render_template("blog/index.html", posts=dictrows)
 
 """
 @bp.route("/test-apscheduler", methods=("GET",))
@@ -109,6 +116,7 @@ def create():
         title = request.form["title"]
         description = request.form["description"]
         image = request.form["image"] # use URL, TODO: use binary
+        image1 =encode_string(image)
         price = request.form["price"] # price is integer
         duration = request.form.get("duration", type=int) #time in seconds
         disabledBid = 0 # used for disable bids for post
@@ -128,7 +136,7 @@ def create():
             db = get_db()
             db.execute(
                 "INSERT INTO post (title, description, image, price, duration, disabledBid, status, author_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                (title, description, image, price, duration, disabledBid,status, g.user["id"]),
+                (title, description, image1, price, duration, disabledBid,status, g.user["id"]),
             )
             db.commit()
 
@@ -381,15 +389,15 @@ def listener(postID):
                 # Transfer money from winner to seller 
                 db.execute("UPDATE user SET total_fund = ?, held_fund = ? WHERE id = ?", (winner["total_fund"] - ask_price, winner["held_fund"] - ask_price, winner["id"]))
                 db.execute("UPDATE user SET total_fund = ? WHERE id = ?", (seller["total_fund"] + ask_price, seller["id"]))
-                db.execute("INSERT INTO notification (author_id, post_id, message,unread) VALUES (?, ?, ?, ?)",(seller["id"],postID,sellerMsg, 0),)
+                db.execute("INSERT INTO notification (author_id, post_id, message,unread) VALUES (?, ?, ?, ?)",(seller["id"],postID,encode_string(sellerMsg), 0),)
                 if(sellerNotifications is None):
-                    db.execute("INSERT INTO notification (author_id, post_id, message,unread) VALUES (?, ?, ?, ?)",(seller["id"],postID,trollThankYouMsg, 0),)
+                    db.execute("INSERT INTO notification (author_id, post_id, message,unread) VALUES (?, ?, ?, ?)",(seller["id"],postID,encode_string(trollThankYouMsg), 0),)
             else:
                 msg = notWinningBidMsg
 
             db.execute(
                 "INSERT INTO notification (author_id, post_id, message,unread) VALUES (?, ?, ?, ?)",
-                (user,postID,msg, 0),
+                (user,postID,encode_string(msg), 0),
             )
             db.commit()
         print("Successfully added all notifcations to db")
@@ -403,6 +411,23 @@ def notifications():
     """Show all the posts, most recent first."""
     db = get_db()
     notifications = db.execute( "SELECT id,author_id, post_id, message FROM notification WHERE author_id =  ?",( g.user["id"], )).fetchall()
-    
+    dictrows1 = [dict(row) for row in notifications]
+    for notif in dictrows1:
+        text=decode_string(notif['message'])
+        notif['message']=text
+    return render_template("blog/notifications.html", notifications = dictrows1)
 
-    return render_template("blog/notifications.html", notifications = notifications)
+
+
+def encode_string(text):
+    message_bytes = text.encode('ascii')
+    base64_bytes = base64.b64encode(message_bytes)
+    base64_message = base64_bytes.decode('ascii')
+    return base64_message
+
+def decode_string(text):
+    base64_bytes=text.encode('ascii')
+    msg_bytes=base64.b64decode(base64_bytes)
+    decoded_text=msg_bytes.decode('ascii')
+    return decoded_text
+
